@@ -1,0 +1,453 @@
+<title>Mon style sous tension</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: a single-column instrument — question deck, then a
+   four-bar profile (passif/agressif/manipulateur/assertif) handed off
+   to a printable synthesis card isolated via @media print visibility. */
+:root{
+  --bg:#FAF7F2; --surface:#FFFFFF; --ink:#262220; --ink-dim:#6B625B;
+  --line:#E4DBD0; --line-soft:#EFE8DF;
+  --passif:#7D93A8; --agressif:#C1543C; --manip:#9B7EBD; --assertif:#2F7A5E;
+  --assertif-dim:#E4F1EB;
+  --accent:#C1543C;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#201C19; --surface:#2A2521; --ink:#F3ECE4; --ink-dim:#B3A99E;
+    --line:#423A33; --line-soft:#352E29;
+    --passif:#8FA7BC; --agressif:#E07259; --manip:#B79BD6; --assertif:#59B38C;
+    --assertif-dim:#1E332B;
+    --accent:#E07259;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#201C19; --surface:#2A2521; --ink:#F3ECE4; --ink-dim:#B3A99E;
+  --line:#423A33; --line-soft:#352E29;
+  --passif:#8FA7BC; --agressif:#E07259; --manip:#B79BD6; --assertif:#59B38C;
+  --assertif-dim:#1E332B;
+  --accent:#E07259;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Public Sans',-apple-system,sans-serif;
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif; text-wrap:balance; margin:0}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.wrap{max-width:720px; margin:0 auto; padding:36px 0 64px}
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--accent); font-weight:600;
+}
+.intro h1{font-size:clamp(28px,6vw,38px); line-height:1.08; margin:10px 0 14px}
+.intro p{color:var(--ink-dim); font-size:15.5px; line-height:1.55; max-width:62ch}
+.legend{
+  display:flex; flex-wrap:wrap; gap:8px 16px; margin:22px 0 0; padding:0; list-style:none;
+  font-size:12.5px; color:var(--ink-dim);
+}
+.legend li{display:flex; align-items:center; gap:6px}
+.dot{width:9px; height:9px; border-radius:50%; flex:none}
+.d-passif{background:var(--passif)} .d-agressif{background:var(--agressif)}
+.d-manip{background:var(--manip)} .d-assertif{background:var(--assertif)}
+
+.startbtn{
+  margin-top:28px; appearance:none; border:none; cursor:pointer;
+  background:var(--accent); color:#fff; font-family:'Public Sans',sans-serif;
+  font-weight:600; font-size:15px; padding:13px 26px; border-radius:999px;
+}
+.startbtn:hover{filter:brightness(1.06)}
+
+#quiz{display:none}
+.progress-row{display:flex; align-items:center; gap:12px; margin:0 0 26px}
+.progress-track{flex:1; height:4px; background:var(--line); border-radius:3px; overflow:hidden}
+.progress-fill{height:100%; width:0%; background:var(--accent); transition:width .25s ease}
+.progress-label{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-dim); white-space:nowrap}
+
+.qcard{
+  background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:30px 26px; min-height:220px; display:flex; flex-direction:column; justify-content:center;
+}
+.qnum{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-dim); margin-bottom:10px}
+.qtext{font-family:'Fraunces',serif; font-size:clamp(19px,4vw,23px); line-height:1.35; margin:0 0 26px}
+.answers{display:flex; gap:12px}
+.ansbtn{
+  flex:1; appearance:none; cursor:pointer; border-radius:10px; padding:14px 10px;
+  font-family:'Public Sans',sans-serif; font-weight:600; font-size:14.5px;
+  border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+  transition:border-color .15s ease, background .15s ease;
+}
+.ansbtn:hover{border-color:var(--accent)}
+.ansbtn.true{color:var(--assertif)} .ansbtn.false{color:var(--ink-dim)}
+
+.navrow{display:flex; justify-content:space-between; margin-top:16px}
+.backbtn{
+  appearance:none; border:none; background:none; cursor:pointer;
+  color:var(--ink-dim); font-family:'Public Sans',sans-serif; font-size:13.5px;
+  padding:8px 4px; visibility:hidden;
+}
+.backbtn.show{visibility:visible}
+
+#result{display:none}
+.result-head h2{font-size:clamp(24px,5vw,30px); margin:0 0 6px}
+.result-head p{color:var(--ink-dim); font-size:14.5px; margin:0 0 30px}
+
+.bars{display:flex; flex-direction:column; gap:16px; margin:0 0 34px}
+.bar-row{display:grid; grid-template-columns:148px 1fr 40px; align-items:center; gap:12px}
+.bar-row .label{font-size:13.5px; font-weight:600}
+.bar-track{height:14px; background:var(--line-soft); border-radius:7px; overflow:hidden}
+.bar-fill{height:100%; border-radius:7px; width:0%; transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.bar-score{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--ink-dim); text-align:right}
+
+.dom-card{
+  background:var(--assertif-dim); border:1px solid var(--assertif); border-radius:14px;
+  padding:24px 24px; margin-bottom:30px;
+}
+.dom-card.is-passif{background:color-mix(in srgb, var(--passif) 14%, var(--surface)); border-color:var(--passif)}
+.dom-card.is-agressif{background:color-mix(in srgb, var(--agressif) 14%, var(--surface)); border-color:var(--agressif)}
+.dom-card.is-manip{background:color-mix(in srgb, var(--manip) 14%, var(--surface)); border-color:var(--manip)}
+.dom-card .kicker{font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-dim)}
+.dom-card h3{font-size:21px; margin:4px 0 10px}
+.dom-card p{font-size:14.5px; line-height:1.55; color:var(--ink); margin:0}
+
+.grid4{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:34px}
+@media (max-width:560px){.grid4{grid-template-columns:1fr}}
+.style-card{border:1px solid var(--line); border-radius:12px; padding:18px 18px; background:var(--surface)}
+.style-card .top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.style-card h4{font-size:15px; margin:0}
+.style-card .cost, .style-card .aim{font-size:12.5px; line-height:1.45; margin:6px 0 0}
+.style-card .cost{color:var(--ink-dim)}
+.style-card .aim{color:var(--assertif); font-weight:600}
+
+.restart-row{margin-top:8px}
+.ghost{
+  appearance:none; border:1.5px solid var(--line); background:none; cursor:pointer;
+  color:var(--ink-dim); font-family:'Public Sans',sans-serif; font-size:13.5px;
+  padding:10px 18px; border-radius:999px;
+}
+.ghost:hover{border-color:var(--accent); color:var(--accent)}
+
+.print-hint{
+  margin-top:40px; padding:14px 16px; border:1px dashed var(--line); border-radius:10px;
+  font-size:13px; color:var(--ink-dim); line-height:1.5;
+}
+#printSheet{
+  margin-top:28px; border:1px solid var(--line); border-radius:14px; padding:28px 26px;
+  background:var(--surface);
+}
+#printSheet h2{font-size:20px; margin:0 0 4px}
+.ps-sub{color:var(--ink-dim); font-size:12.5px; margin:0 0 22px}
+.ps-block{margin-bottom:22px}
+.ps-block h3{font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-dim); margin:0 0 12px; font-family:'IBM Plex Mono',monospace; font-weight:600}
+.ps-dom{font-family:'Fraunces',serif; font-size:22px; margin:0 0 14px}
+table.ps-table{width:100%; border-collapse:collapse; font-size:12.5px}
+table.ps-table th, table.ps-table td{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+table.ps-table th{font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-dim)}
+table.ps-table tr.ps-mine td{background:var(--assertif-dim)}
+
+@media print{
+  body *{visibility:hidden}
+  #printSheet, #printSheet *{visibility:visible}
+  #printSheet{position:absolute; top:0; left:0; width:100%; border:none; padding:0; box-shadow:none}
+  .print-hint, .no-print{display:none!important}
+}
+</style>
+
+<div class="wrap">
+
+  <div class="intro" id="intro">
+    <div class="eyebrow">NI PROVOQUER, NI SUBIR — auto-diagnostic</div>
+    <h1>Mon style sous tension</h1>
+    <p>24 affirmations sur vos réactions spontanées face à une situation tendue en agence — un intérimaire en colère, un client qui conteste, une paie bloquée. Répondez vite, sans trop réfléchir : c'est le premier réflexe qui compte.</p>
+    <p>Chaque réponse pèse sur l'un des quatre styles de Gordon — <strong>passif</strong>, <strong>agressif</strong>, <strong>manipulateur</strong>, <strong>assertif</strong>. Le profil n'est pas un verdict : la plupart des gens mêlent les quatre, avec un style qui domine sous pression.</p>
+    <ul class="legend">
+      <li><span class="dot d-passif"></span>Passif — je subis</li>
+      <li><span class="dot d-agressif"></span>Agressif — j'attaque</li>
+      <li><span class="dot d-manip"></span>Manipulateur — je détourne</li>
+      <li><span class="dot d-assertif"></span>Assertif — je m'affirme</li>
+    </ul>
+    <button class="startbtn" id="startBtn">Commencer le test</button>
+  </div>
+
+  <div id="quiz">
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label mono" id="progressLabel">1 / 24</div>
+    </div>
+    <div class="qcard">
+      <div class="qnum mono" id="qnum">QUESTION 1</div>
+      <p class="qtext" id="qtext"></p>
+      <div class="answers">
+        <button class="ansbtn true" data-val="true">Plutôt vrai</button>
+        <button class="ansbtn false" data-val="false">Plutôt faux</button>
+      </div>
+    </div>
+    <div class="navrow">
+      <button class="backbtn" id="backBtn">← question précédente</button>
+    </div>
+  </div>
+
+  <div id="result">
+    <div class="result-head">
+      <div class="eyebrow">Résultat</div>
+      <h2 id="resTitle"></h2>
+      <p id="resSub"></p>
+    </div>
+
+    <div class="bars" id="bars"></div>
+
+    <div class="dom-card" id="domCard">
+      <div class="kicker">Votre style dominant</div>
+      <h3 id="domName"></h3>
+      <p id="domText"></p>
+    </div>
+
+    <div class="grid4" id="grid4"></div>
+
+    <div class="print-hint no-print">
+      <strong>Pour imprimer ou enregistrer en PDF :</strong> utilisez le raccourci de votre navigateur (Ctrl+P sur PC, Cmd+P sur Mac), puis choisissez « Enregistrer au format PDF ». Seule la fiche ci-dessous sera imprimée.
+    </div>
+
+    <div id="printSheet">
+      <h2>Ma fiche récapitulative — Test d'assertivité (Gordon)</h2>
+      <p class="ps-sub">NI PROVOQUER, NI SUBIR</p>
+      <div class="ps-block">
+        <h3>1 · Mon style dominant</h3>
+        <div class="ps-dom" id="psDomName"></div>
+        <div class="bars" id="psBars"></div>
+      </div>
+      <div class="ps-block">
+        <h3>2 · Les 4 styles — ce que ça coûte, vers quoi tendre</h3>
+        <table class="ps-table">
+          <thead><tr><th>Style</th><th>Score</th><th>Ce que ça coûte</th><th>Vers quoi tendre</th></tr></thead>
+          <tbody id="psTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="restart-row no-print">
+      <button type="button" class="ghost" id="restartBtn">Refaire le test</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STYLES = {
+    passif: {
+      name: "Passif — je subis",
+      color: "var(--passif)",
+      desc: "Vous évitez le conflit en cédant ou en remettant à plus tard. À court terme ça apaise, mais l'irritant reste entier et revient souvent plus fort.",
+      cost: "L'autre ne sait pas où est votre limite ; la frustration s'accumule en silence jusqu'à sortir d'un coup.",
+      aim: "Dire ce qui ne va pas dès que ça se présente, calmement, avant que ça pèse."
+    },
+    agressif: {
+      name: "Agressif — j'attaque",
+      color: "var(--agressif)",
+      desc: "Vous reprenez le contrôle par la force : ton qui monte, coupe la parole, réponse sèche. Ça fonctionne sur l'instant, au prix de la relation.",
+      cost: "Le conflit s'envenime, l'autre se braque ou riposte ; la confiance s'abîme durablement.",
+      aim: "Décrire les faits avant de juger, et baisser d'un ton quand l'autre monte."
+    },
+    manip: {
+      name: "Manipulateur — je détourne",
+      color: "var(--manip)",
+      desc: "Vous obtenez ce que vous voulez par des voies indirectes — sous-entendu, culpabilisation, détour — plutôt que de le demander franchement.",
+      cost: "Ça marche une fois, rarement deux : une fois repéré, plus personne ne vous fait confiance sur parole.",
+      aim: "Dire directement ce que vous voulez, sans détour ni calcul."
+    },
+    assertif: {
+      name: "Assertif — je m'affirme",
+      color: "var(--assertif)",
+      desc: "Vous dites les choses directement, sans écraser l'autre ni vous effacer. Vous tenez votre position sans hausser le ton.",
+      cost: "Demande un effort de clarté sur le moment, surtout sous forte pression.",
+      aim: "C'est la posture à tenir — le repère vers lequel les trois autres styles peuvent progresser."
+    }
+  };
+
+  var QUESTIONS = [
+    { style: "passif", text: "Je dis souvent « oui » à une demande urgente même quand je sais que je n'ai pas le temps." },
+    { style: "agressif", text: "Quand je suis sous pression, il m'arrive de couper la parole à mon interlocuteur." },
+    { style: "manip", text: "Pour obtenir ce que je veux, il m'arrive de laisser entendre les choses plutôt que de les dire franchement." },
+    { style: "assertif", text: "Je dis les choses directement, sans détour mais sans agressivité." },
+    { style: "passif", text: "Je préfère éviter un appel difficile plutôt que d'y faire face tout de suite." },
+    { style: "agressif", text: "Je hausse le ton assez vite quand on me conteste au téléphone." },
+    { style: "manip", text: "Il m'arrive de faire culpabiliser quelqu'un pour qu'il revienne sur sa position." },
+    { style: "assertif", text: "Je peux dire non à une demande tout en restant respectueux de la personne." },
+    { style: "passif", text: "Quand un client hausse le ton, j'ai tendance à céder pour que ça s'arrête." },
+    { style: "agressif", text: "Face à une réclamation injustifiée, j'ai tendance à répondre sèchement." },
+    { style: "manip", text: "Face à un refus, je cherche parfois un autre biais pour arriver à mes fins sans le dire ouvertement." },
+    { style: "assertif", text: "Je décris les faits avant de parler de ce que je ressens." },
+    { style: "passif", text: "Je m'excuse même quand ce n'est pas moi qui suis en tort." },
+    { style: "agressif", text: "Je préfère imposer ma solution plutôt que de chercher un compromis quand je suis pressé par le temps." },
+    { style: "manip", text: "Il m'arrive de flatter quelqu'un pour obtenir plus facilement ce que je veux de lui." },
+    { style: "assertif", text: "Je reste sur ma position sans hausser le ton, même si l'autre insiste." },
+    { style: "passif", text: "Je laisse souvent passer une remarque désagréable sans réagir, pour ne pas envenimer les choses." },
+    { style: "agressif", text: "Il m'arrive de faire des reproches directs plutôt que de décrire les faits." },
+    { style: "manip", text: "Je préfère parfois laisser planer le doute plutôt que de dire clairement non." },
+    { style: "assertif", text: "Je cherche une solution concrète plutôt qu'un gagnant et un perdant." },
+    { style: "passif", text: "Je remets à plus tard une annonce difficile à faire à un intérimaire ou un client." },
+    { style: "agressif", text: "Quand je sens que j'ai raison, j'insiste jusqu'à ce que l'autre cède." },
+    { style: "manip", text: "J'utilise volontiers l'humour ou l'ironie pour faire passer un message que je n'ose pas dire directement." },
+    { style: "assertif", text: "Je suis à l'aise pour reconnaître une erreur sans m'excuser en boucle." }
+  ];
+
+  var RANK_ORDER = ["assertif", "passif", "agressif", "manip"];
+
+  var answers = new Array(QUESTIONS.length).fill(null);
+  var current = 0;
+
+  var introEl = document.getElementById('intro');
+  var quizEl = document.getElementById('quiz');
+  var resultEl = document.getElementById('result');
+  var qnumEl = document.getElementById('qnum');
+  var qtextEl = document.getElementById('qtext');
+  var progressFill = document.getElementById('progressFill');
+  var progressLabel = document.getElementById('progressLabel');
+  var backBtn = document.getElementById('backBtn');
+
+  function renderQuestion(){
+    var q = QUESTIONS[current];
+    qnumEl.textContent = "QUESTION " + (current + 1);
+    qtextEl.textContent = q.text;
+    progressFill.style.width = ((current) / QUESTIONS.length * 100) + "%";
+    progressLabel.textContent = (current + 1) + " / " + QUESTIONS.length;
+    backBtn.classList.toggle('show', current > 0);
+  }
+
+  function answer(val){
+    answers[current] = val;
+    if (current < QUESTIONS.length - 1){
+      current++;
+      renderQuestion();
+    } else {
+      progressFill.style.width = "100%";
+      progressLabel.textContent = QUESTIONS.length + " / " + QUESTIONS.length;
+      showResult();
+    }
+  }
+
+  document.querySelectorAll('.ansbtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      answer(btn.getAttribute('data-val') === 'true');
+    });
+  });
+
+  backBtn.addEventListener('click', function(){
+    if (current > 0){
+      current--;
+      renderQuestion();
+    }
+  });
+
+  document.getElementById('startBtn').addEventListener('click', function(){
+    introEl.style.display = 'none';
+    quizEl.style.display = 'block';
+    renderQuestion();
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', function(){
+    answers = new Array(QUESTIONS.length).fill(null);
+    current = 0;
+    resultEl.style.display = 'none';
+    introEl.style.display = 'block';
+  });
+
+  function computeScores(){
+    var scores = { passif: 0, agressif: 0, manip: 0, assertif: 0 };
+    QUESTIONS.forEach(function(q, i){
+      if (answers[i] === true) scores[q.style]++;
+    });
+    return scores;
+  }
+
+  function maxCountFor(style){
+    return QUESTIONS.filter(function(q){ return q.style === style; }).length;
+  }
+
+  function buildBars(container, scores, highlightKey){
+    container.innerHTML = '';
+    RANK_ORDER.forEach(function(key){
+      var st = STYLES[key];
+      var max = maxCountFor(key);
+      var score = scores[key];
+      var row = document.createElement('div');
+      row.className = 'bar-row';
+      var pct = max ? (score / max * 100) : 0;
+      row.innerHTML =
+        '<div class="label" style="color:' + st.color + '">' + st.name.split(' — ')[0] + '</div>' +
+        '<div class="bar-track"><div class="bar-fill" style="background:' + st.color + '"></div></div>' +
+        '<div class="bar-score mono">' + score + '/' + max + '</div>';
+      container.appendChild(row);
+      var fillEl = row.querySelector('.bar-fill');
+      requestAnimationFrame(function(){ fillEl.style.width = pct + '%'; });
+    });
+  }
+
+  function dominantKey(scores){
+    var order = ["assertif", "passif", "agressif", "manip"];
+    var best = order[0];
+    order.forEach(function(k){ if (scores[k] > scores[best]) best = k; });
+    return best;
+  }
+
+  function showResult(){
+    quizEl.style.display = 'none';
+    resultEl.style.display = 'block';
+
+    var scores = computeScores();
+    var dom = dominantKey(scores);
+    var domSt = STYLES[dom];
+
+    document.getElementById('resTitle').textContent = 'Votre profil sous tension';
+    document.getElementById('resSub').textContent = 'Réparti sur 24 affirmations, 6 par style.';
+
+    buildBars(document.getElementById('bars'), scores, dom);
+
+    var domCard = document.getElementById('domCard');
+    domCard.className = 'dom-card is-' + dom;
+    document.getElementById('domName').textContent = domSt.name;
+    document.getElementById('domText').textContent = domSt.desc;
+
+    var grid = document.getElementById('grid4');
+    grid.innerHTML = '';
+    RANK_ORDER.forEach(function(key){
+      var st = STYLES[key];
+      var card = document.createElement('div');
+      card.className = 'style-card';
+      card.innerHTML =
+        '<div class="top"><span class="dot" style="background:' + st.color + '"></span><h4>' + st.name + '</h4></div>' +
+        '<p class="cost">' + st.cost + '</p>' +
+        '<p class="aim">→ ' + st.aim + '</p>';
+      grid.appendChild(card);
+    });
+
+    document.getElementById('psDomName').textContent = domSt.name;
+    buildBars(document.getElementById('psBars'), scores, dom);
+
+    var tbody = document.getElementById('psTableBody');
+    tbody.innerHTML = '';
+    RANK_ORDER.forEach(function(key){
+      var st = STYLES[key];
+      var max = maxCountFor(key);
+      var tr = document.createElement('tr');
+      if (key === dom) tr.className = 'ps-mine';
+      tr.innerHTML =
+        '<td><strong>' + st.name.split(' — ')[0] + '</strong></td>' +
+        '<td class="mono">' + scores[key] + '/' + max + '</td>' +
+        '<td>' + st.cost + '</td>' +
+        '<td>' + st.aim + '</td>';
+      tbody.appendChild(tr);
+    });
+  }
+})();
+</script>
